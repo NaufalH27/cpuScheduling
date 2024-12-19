@@ -2,60 +2,74 @@
 
 int main() 
 { 
-    int i, j, n, time, remain, flag = 0, tq; 
-    int TotWT = 0, TotTA = 0, AT[100], b[100], rt[100]; 
+    int processIndex, timeIndex, totalProcesses, currentTime, remainingProcesses, isProcessCompleted = 0, timeQuantum; 
+    int totalWaitingTime = 0, totalTurnaroundTime = 0, arrivalTime[100], burstTime[100], remainingTime[100]; 
 
-    printf("Masukkan jumlah proses : "); 
-    scanf("%d", &n); 
-    remain = n; 
+    // Input the total number of processes
+    printf("Enter the number of processes: "); 
+    scanf("%d", &totalProcesses); 
+    remainingProcesses = totalProcesses; 
 
-    for (i = 0; i < n; i++) 
+    // Input the arrival time and burst time for each process
+    for (processIndex = 0; processIndex < totalProcesses; processIndex++) 
     { 
-        printf("Masukkan arrival time untuk Proses P%d :", i + 1);  
-        scanf("%d", &AT[i]); 
-        printf("Masukkan burst time untuk Proses P%d :", i + 1);  
-        scanf("%d", &b[i]); 
-        rt[i] = b[i]; 
+        printf("Enter arrival time for Process P%d: ", processIndex + 1);  
+        scanf("%d", &arrivalTime[processIndex]); 
+        printf("Enter burst time for Process P%d: ", processIndex + 1);  
+        scanf("%d", &burstTime[processIndex]); 
+        remainingTime[processIndex] = burstTime[processIndex]; 
     } 
 
-    printf("Masukkan time quantum "); 
-    scanf("%d", &tq); 
+    //arrivalTime = [0, 20, 25]
+    //burstTime = [5, 4, 5]
+    //remainingTime = [5, 4, 5]
 
-    printf("\n\nProcess\t|Turnaround time|waiting time\n\n");  
+    // Input the time quantum
+    printf("Enter the time quantum: "); 
+    scanf("%d", &timeQuantum); 
 
-    for (time = 0, i = 0; remain != 0;) 
+    // Display table headers
+    printf("\n\nProcess\t| Turnaround time | Waiting time\n\n");  
+
+    // Round-robin scheduling loop
+    for (currentTime = 0, processIndex = 0; remainingProcesses != 0;) 
     { 
-        if (rt[i] <= tq && rt[i] > 0) 
+        // If process can finish within time quantum
+        if (remainingTime[processIndex] <= timeQuantum && remainingTime[processIndex] > 0) 
         { 
-            time += rt[i]; 
-            rt[i] = 0; 
-            flag = 1; 
+            currentTime += remainingTime[processIndex]; 
+            remainingTime[processIndex] = 0; 
+            isProcessCompleted = 1; 
         } 
-        else if (rt[i] > 0) 
+        // If process cannot finish within time quantum
+        else if (remainingTime[processIndex] > 0) 
         { 
-            rt[i] -= tq; 
-            time += tq; 
+            remainingTime[processIndex] -= timeQuantum; 
+            currentTime += timeQuantum; 
         } 
 
-        if (rt[i] == 0 && flag == 1) 
+        // Process has completed its execution
+        if (remainingTime[processIndex] == 0 && isProcessCompleted == 1) 
         { 
-            remain--; 
-            printf("P[%d]\t|\t%d\t|\t%d\n", i + 1, time - AT[i], time - AT[i] - b[i]); 
-            TotWT += time - AT[i] - b[i]; 
-            TotTA += time - AT[i]; 
-            flag = 0; 
+            remainingProcesses--; 
+            printf("P[%d]\t|\t%d\t|\t%d\n", processIndex + 1, currentTime - arrivalTime[processIndex], currentTime - arrivalTime[processIndex] - burstTime[processIndex]); 
+            totalWaitingTime += currentTime - arrivalTime[processIndex] - burstTime[processIndex]; 
+            totalTurnaroundTime += currentTime - arrivalTime[processIndex]; 
+            isProcessCompleted = 0; 
         }  
 
-        if (i == n - 1) 
-            i = 0; 
-        else if (AT[i + 1] <= time) 
-            i++; 
+        // Move to the next process or restart from the first process
+        if (processIndex == totalProcesses - 1) 
+            processIndex = 0; 
+        else if (arrivalTime[processIndex + 1] <= currentTime) 
+            processIndex++; 
         else 
-            i = 0; 
+            processIndex = 0; 
     } 
 
-    printf("\nAverage Waiting Time = %f\n", TotWT * 1.0 / n);  
-    printf("Average Turnaround Time = %f\n", TotTA * 1.0 / n);  
+    // Output the average waiting time and average turnaround time
+    printf("\nAverage Waiting Time = %.2f\n", totalWaitingTime * 1.0 / totalProcesses);  
+    printf("Average Turnaround Time = %.2f\n", totalTurnaroundTime * 1.0 / totalProcesses);  
 
     return 0; 
 }
